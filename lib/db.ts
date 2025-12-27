@@ -156,8 +156,9 @@ export const db = {
   },
 
   resetToDefaults: () => {
-    localStorage.setItem(KEYS.GAME_DATA, JSON.stringify(DEFAULT_GAME_DATA));
-    localStorage.setItem(KEYS.NEWS, JSON.stringify(DEFAULT_NEWS));
+    localStorage.removeItem(KEYS.GAME_DATA);
+    localStorage.removeItem(KEYS.NEWS);
+    db.init();
     return true;
   },
 
