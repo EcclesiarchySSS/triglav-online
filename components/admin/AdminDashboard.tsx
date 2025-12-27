@@ -1,32 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, FileText, Activity, LogOut, Settings, Save, Trash2, Plus, LayoutDashboard, Image as ImageIcon, Upload, Server, AlertTriangle, RefreshCw } from 'lucide-react';
-import { db, GameData, NewsItem, User, FeatureItem } from '../../lib/db';
+import { Users, FileText, Activity, LogOut, Settings, Save, Trash2, Plus, LayoutDashboard, Image as ImageIcon, Upload, Server, AlertTriangle, RefreshCw, Palette } from 'lucide-react';
+import { db, GameData, NewsItem, User, Faction } from '../../lib/db';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'content' | 'news' | 'users' | 'settings'>('overview');
   
-  // Data State
   const [gameData, setGameData] = useState<GameData>(db.getGameData());
   const [news, setNews] = useState<NewsItem[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Form State
   const [newNewsItem, setNewNewsItem] = useState({ title: '', preview: '', date: '', image: '' });
-  
-  // New Feature State
-  const [newFeature, setNewFeature] = useState<FeatureItem>({ title: '', description: '', image: '' });
 
   useEffect(() => {
-    // Check auth
     if (!localStorage.getItem('triglav_admin_auth')) {
       navigate('/admin');
       return;
     }
-
-    // Load data
     refreshData();
   }, [navigate]);
 
@@ -44,14 +36,14 @@ const AdminDashboard: React.FC = () => {
 
   const handleSaveContent = () => {
     db.updateGameData(gameData);
-    alert('Контент на главной странице обновлен!');
+    alert('Контент успешно обновлен!');
+    refreshData();
   };
 
   const handleResetDatabase = () => {
-    if (confirm('ВНИМАНИЕ: Это сбросит все новости, скриншоты и настройки текста к начальным значениям. Вы уверены?')) {
+    if (confirm('ВНИМАНИЕ: Сбросить все данные сайта до заводских? Это удалит все ваши изменения фракций и новости.')) {
       db.resetToDefaults();
       refreshData();
-      alert('База данных успешно сброшена к исходному состоянию.');
     }
   };
 
@@ -71,14 +63,12 @@ const AdminDashboard: React.FC = () => {
   const handleAddNews = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newNewsItem.title || !newNewsItem.date) return;
-    
     db.addNews({
       title: newNewsItem.title,
       preview: newNewsItem.preview,
       date: newNewsItem.date,
       image: newNewsItem.image || "https://placehold.co/600x400/1a1a1a/amber?text=News"
     });
-    
     setNewNewsItem({ title: '', preview: '', date: '', image: '' });
     refreshData();
   };
@@ -90,278 +80,170 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleAddScreenshot = (base64: string) => {
-    const updatedScreenshots = [...gameData.screenshots, base64];
-    setGameData({ ...gameData, screenshots: updatedScreenshots });
+  const handleUpdateFaction = (index: number, field: keyof Faction, value: string) => {
+    const updatedFactions = [...gameData.factions];
+    updatedFactions[index] = { ...updatedFactions[index], [field]: value };
+    setGameData({ ...gameData, factions: updatedFactions });
   };
 
-  const handleDeleteScreenshot = (index: number) => {
-    const updatedScreenshots = gameData.screenshots.filter((_, i) => i !== index);
-    setGameData({ ...gameData, screenshots: updatedScreenshots });
-  };
-
-  const handleUpdateFeature = (index: number, field: keyof FeatureItem, value: string) => {
-    const updatedFeatures = [...gameData.features];
-    updatedFeatures[index] = { ...updatedFeatures[index], [field]: value };
-    setGameData({ ...gameData, features: updatedFeatures });
-  };
-
-  const updateServerStatus = (status: 'online' | 'offline' | 'maintenance') => {
-    const newData = { ...gameData, serverStatus: status };
-    setGameData(newData);
-    db.updateGameData(newData);
-  };
-
-  if (loading) return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-amber-500 font-black">ЗАГРУЗКА...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white flex-shrink-0">
+      <aside className="w-64 bg-gray-900 text-white flex-shrink-0 border-r border-gray-800 relative">
         <div className="p-6 border-b border-gray-800 flex items-center space-x-3">
-           <div className="w-8 h-8 bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center font-black text-sm border border-amber-500/50 rounded">
-            <span className="text-black">T</span>
-          </div>
-          <span className="font-bold tracking-wider">ADMIN PANEL</span>
+          <div className="w-8 h-8 bg-amber-600 flex items-center justify-center font-black text-black rounded">T</div>
+          <span className="font-bold tracking-widest uppercase text-sm">Панель Управления</span>
         </div>
         
-        <nav className="mt-6 px-4 space-y-2">
-          <button 
-            onClick={() => setActiveTab('overview')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded transition ${activeTab === 'overview' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
-          >
-            <LayoutDashboard size={20} />
-            <span>Обзор</span>
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('content')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded transition ${activeTab === 'content' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
-          >
-            <FileText size={20} />
-            <span>Контент</span>
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('news')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded transition ${activeTab === 'news' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
-          >
-            <Activity size={20} />
-            <span>Новости</span>
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('users')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded transition ${activeTab === 'users' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
-          >
-            <Users size={20} />
-            <span>Пользователи</span>
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('settings')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded transition ${activeTab === 'settings' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:bg-gray-800'}`}
-          >
-            <Settings size={20} />
-            <span>Настройки</span>
-          </button>
+        <nav className="mt-6 px-4 space-y-1">
+          {[
+            { id: 'overview', icon: LayoutDashboard, label: 'Обзор' },
+            { id: 'content', icon: FileText, label: 'Контент' },
+            { id: 'news', icon: Activity, label: 'Новости' },
+            { id: 'users', icon: Users, label: 'Люди' },
+            { id: 'settings', icon: Settings, label: 'Настройки' }
+          ].map(tab => (
+            <button 
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded transition font-bold uppercase text-[10px] tracking-widest ${activeTab === tab.id ? 'bg-amber-600 text-white shadow-lg shadow-amber-900/20' : 'text-gray-400 hover:bg-gray-800'}`}
+            >
+              <tab.icon size={16} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
         </nav>
 
-        <div className="absolute bottom-0 w-64 p-4 border-t border-gray-800">
-          <button 
-            onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-4 py-2 text-gray-400 hover:text-white transition"
-          >
-            <LogOut size={20} />
+        <div className="absolute bottom-0 w-64 p-4 border-t border-gray-800 bg-gray-900">
+          <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-2 text-gray-400 hover:text-red-500 transition text-xs font-bold uppercase">
+            <LogOut size={16} />
             <span>Выход</span>
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* Main Area */}
       <main className="flex-1 overflow-y-auto p-8">
         
-        {/* OVERVIEW TAB */}
+        {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Обзор системы</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-gray-500 uppercase text-xs font-bold">Статус сервера</h3>
-                  <Server className={`${
-                    gameData.serverStatus === 'online' ? 'text-green-500' : 
-                    gameData.serverStatus === 'maintenance' ? 'text-yellow-500' : 'text-red-500'
-                  }`} size={24} />
-                </div>
-                <div className="flex gap-2 mt-2">
-                  <button 
-                    onClick={() => updateServerStatus('online')}
-                    className={`px-3 py-1 text-xs font-bold rounded ${gameData.serverStatus === 'online' ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-gray-100 text-gray-500'}`}
-                  >
-                    ONLINE
-                  </button>
-                  <button 
-                    onClick={() => updateServerStatus('maintenance')}
-                    className={`px-3 py-1 text-xs font-bold rounded ${gameData.serverStatus === 'maintenance' ? 'bg-yellow-100 text-yellow-700 border border-yellow-300' : 'bg-gray-100 text-gray-500'}`}
-                  >
-                    WORK
-                  </button>
-                  <button 
-                    onClick={() => updateServerStatus('offline')}
-                    className={`px-3 py-1 text-xs font-bold rounded ${gameData.serverStatus === 'offline' ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-gray-100 text-gray-500'}`}
-                  >
-                    OFFLINE
-                  </button>
+          <div className="space-y-6">
+            <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Статистика сайта</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-500">
+                <p className="text-xs font-black text-gray-400 uppercase">Статус Сервера</p>
+                <div className="flex items-center mt-2">
+                  <div className={`w-3 h-3 rounded-full mr-2 ${gameData.serverStatus === 'online' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                  <span className="font-black text-xl uppercase tracking-tighter">{gameData.serverStatus}</span>
                 </div>
               </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-gray-500 uppercase text-xs font-bold">Всего пользователей</h3>
-                  <Users className="text-blue-500" size={24} />
-                </div>
-                <p className="text-3xl font-black text-gray-800">{users.length}</p>
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <p className="text-xs font-black text-gray-400 uppercase">Всего Игроков</p>
+                <p className="text-3xl font-black text-gray-800 mt-2 tracking-tighter">{users.length}</p>
               </div>
-
-              <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-gray-500 uppercase text-xs font-bold">Активные новости</h3>
-                  <Activity className="text-green-500" size={24} />
-                </div>
-                <p className="text-3xl font-black text-gray-800">{news.length}</p>
+              <div className="bg-white p-6 rounded-xl shadow-sm">
+                <p className="text-xs font-black text-gray-400 uppercase">Новостей</p>
+                <p className="text-3xl font-black text-gray-800 mt-2 tracking-tighter">{news.length}</p>
+              </div>
+            </div>
+            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+              <h3 className="font-black uppercase text-gray-400 text-xs mb-4">Быстрое управление сервером</h3>
+              <div className="flex gap-4">
+                {(['online', 'offline', 'maintenance'] as const).map(status => (
+                  <button 
+                    key={status}
+                    onClick={() => {
+                      const newData = { ...gameData, serverStatus: status };
+                      setGameData(newData);
+                      db.updateGameData(newData);
+                    }}
+                    className={`px-6 py-2 rounded font-bold uppercase text-[10px] tracking-widest border transition ${gameData.serverStatus === status ? 'bg-amber-600 border-amber-600 text-white shadow-lg' : 'border-gray-200 text-gray-400 hover:border-amber-500'}`}
+                  >
+                    {status}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         )}
 
-        {/* CONTENT TAB */}
+        {/* Content Tab */}
         {activeTab === 'content' && (
-          <div className="space-y-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-800">Редактирование главной</h2>
-              <button 
-                onClick={handleSaveContent}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded flex items-center space-x-2 shadow-lg sticky top-8 z-10"
-              >
+          <div className="space-y-8 max-w-5xl">
+            <div className="flex items-center justify-between bg-white p-6 rounded-lg shadow-sm">
+              <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Редактор Фракций</h2>
+              <button onClick={handleSaveContent} className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded font-black uppercase tracking-widest flex items-center space-x-2 shadow-lg transition active:scale-95">
                 <Save size={18} />
-                <span>Сохранить все изменения</span>
+                <span>Сохранить изменения</span>
               </button>
             </div>
 
-            {/* Basic Text Info */}
-            <div className="bg-white p-8 rounded-lg shadow border border-gray-200 space-y-6 max-w-4xl">
-              <h3 className="text-lg font-bold border-b pb-2 text-gray-700">Основная информация</h3>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-gray-700 font-bold mb-2">Название игры (H1)</label>
-                  <input 
-                    type="text" 
-                    value={gameData.name}
-                    onChange={(e) => setGameData({...gameData, name: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 font-bold mb-2">Верхний подзаголовок</label>
-                  <input 
-                    type="text" 
-                    value={gameData.tagline}
-                    onChange={(e) => setGameData({...gameData, tagline: e.target.value})}
-                    className="w-full p-3 border border-gray-300 rounded focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-bold mb-2">Главный слоган</label>
-                <input 
-                  type="text" 
-                  value={gameData.slogan}
-                  onChange={(e) => setGameData({...gameData, slogan: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-bold mb-2">Краткое описание (Hero)</label>
-                <textarea 
-                  value={gameData.description}
-                  onChange={(e) => setGameData({...gameData, description: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded focus:border-amber-500 focus:outline-none h-24"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-bold mb-2">Полное описание (About)</label>
-                <textarea 
-                  value={gameData.fullDescription}
-                  onChange={(e) => setGameData({...gameData, fullDescription: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded focus:border-amber-500 focus:outline-none h-24"
-                />
-              </div>
-            </div>
-
-            {/* Features (About Section) */}
-            <div className="bg-white p-8 rounded-lg shadow border border-gray-200 space-y-6 max-w-4xl">
-              <h3 className="text-lg font-bold border-b pb-2 text-gray-700">Блоки "Об игре" (Features)</h3>
-              {gameData.features.map((feature, index) => (
-                <div key={index} className="border border-gray-200 p-4 rounded bg-gray-50 flex gap-4">
-                  <div className="w-32 h-32 flex-shrink-0 bg-gray-200 relative group overflow-hidden border border-gray-300">
-                    <img src={feature.image} alt="Feature" className="w-full h-full object-cover" />
-                    <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition">
-                      <Upload className="text-white" size={24} />
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={(e) => handleImageUpload(e, (base64) => handleUpdateFeature(index, 'image', base64))}
-                      />
-                    </label>
+            <div className="space-y-12">
+              {gameData.factions.map((faction, idx) => (
+                <div key={faction.id} className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 space-y-6">
+                   <div className="flex items-center space-x-3 border-b pb-4">
+                    <Palette className="text-amber-600" size={24} />
+                    <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Настройка: {faction.name}</h3>
                   </div>
-                  <div className="flex-1 space-y-3">
-                    <input 
-                      type="text" 
-                      value={feature.title}
-                      onChange={(e) => handleUpdateFeature(index, 'title', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded font-bold"
-                    />
-                    <textarea 
-                      value={feature.description}
-                      onChange={(e) => handleUpdateFeature(index, 'description', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded text-sm h-20"
-                    />
+                  
+                  <div className="grid md:grid-cols-3 gap-8">
+                    {/* Image Column */}
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase text-gray-400 block">Фото фракции (600x400)</label>
+                      <div className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border-4 border-white shadow-md">
+                        <img src={faction.image} alt="Faction" className="w-full h-full object-cover" />
+                        <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center cursor-pointer transition text-white">
+                          <Upload size={24} className="mb-2" />
+                          <span className="text-[10px] font-bold uppercase">Заменить фото</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, (b64) => handleUpdateFaction(idx, 'image', b64))} />
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Controls Column */}
+                    <div className="md:col-span-2 grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Название фракции</label>
+                        <input type="text" value={faction.name} onChange={(e) => handleUpdateFaction(idx, 'name', e.target.value)} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg font-bold text-gray-800 focus:border-amber-500 outline-none" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Градиент (Tailwind)</label>
+                        <input type="text" value={faction.color} onChange={(e) => handleUpdateFaction(idx, 'color', e.target.value)} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono" placeholder="from-emerald-600 to-emerald-800" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Фон плашки</label>
+                        <input type="text" value={faction.bgColor} onChange={(e) => handleUpdateFaction(idx, 'bgColor', e.target.value)} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono" placeholder="bg-emerald-950/30" />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Описание фракции</label>
+                        <textarea value={faction.description} onChange={(e) => handleUpdateFaction(idx, 'description', e.target.value)} className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg h-24 text-sm text-gray-600 outline-none focus:border-amber-500" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Screenshots Gallery */}
-            <div className="bg-white p-8 rounded-lg shadow border border-gray-200 space-y-6 max-w-4xl">
-              <div className="flex justify-between items-center border-b pb-2">
-                <h3 className="text-lg font-bold text-gray-700">Галерея скриншотов</h3>
-                <label className="cursor-pointer bg-gray-800 text-white px-3 py-1 rounded text-sm hover:bg-black flex items-center gap-2">
-                  <Plus size={16} /> Добавить фото
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    onChange={(e) => handleImageUpload(e, handleAddScreenshot)}
-                  />
+            {/* Screenshots Gallery Section */}
+            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 space-y-6">
+              <div className="flex justify-between items-center border-b pb-4">
+                <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Галерея скриншотов</h3>
+                <label className="cursor-pointer bg-gray-900 text-white px-4 py-2 rounded text-[10px] font-black uppercase hover:bg-black transition flex items-center">
+                  <Plus size={14} className="mr-2" /> Добавить
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, (b64) => setGameData({...gameData, screenshots: [...gameData.screenshots, b64]}))} />
                 </label>
               </div>
-              
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {gameData.screenshots.map((src, index) => (
-                  <div key={index} className="relative group aspect-video bg-gray-100 border border-gray-300 rounded overflow-hidden">
-                    <img src={src} alt="Screenshot" className="w-full h-full object-cover" />
+                {gameData.screenshots.map((src, i) => (
+                  <div key={i} className="relative group aspect-video rounded-lg overflow-hidden border border-gray-100 bg-gray-50 shadow-sm">
+                    <img src={src} className="w-full h-full object-cover" />
                     <button 
-                      onClick={() => handleDeleteScreenshot(index)}
-                      className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition shadow-lg"
+                      onClick={() => setGameData({...gameData, screenshots: gameData.screenshots.filter((_, idx) => idx !== i)})} 
+                      className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition shadow-lg"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14}/>
                     </button>
                   </div>
                 ))}
@@ -370,143 +252,70 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* NEWS TAB */}
+        {/* News Tab */}
         {activeTab === 'news' && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Управление новостями</h2>
+          <div className="space-y-8 max-w-5xl">
+            <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Новости</h2>
             
-            <div className="grid lg:grid-cols-3 gap-8">
-              {/* Form */}
-              <div className="bg-white p-6 rounded-lg shadow border border-gray-200 h-fit sticky top-8">
-                <h3 className="text-lg font-bold mb-4">Добавить новость</h3>
-                <form onSubmit={handleAddNews} className="space-y-4">
-                  
-                  {/* Image Upload */}
-                  <div className="relative w-full h-48 bg-gray-100 border-2 border-dashed border-gray-300 rounded flex flex-col items-center justify-center cursor-pointer hover:border-amber-500 transition group overflow-hidden">
-                    {newNewsItem.image ? (
-                      <img src={newNewsItem.image} alt="Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <>
-                        <ImageIcon className="text-gray-400 mb-2" size={32} />
-                        <span className="text-gray-500 text-sm">Нажмите для загрузки фото</span>
-                      </>
-                    )}
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={(e) => handleImageUpload(e, (base64) => setNewNewsItem({ ...newNewsItem, image: base64 }))}
-                    />
-                    {newNewsItem.image && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                        <span className="text-white text-sm font-bold">Изменить фото</span>
-                      </div>
-                    )}
-                  </div>
-
+            {/* Form */}
+            <form onSubmit={handleAddNews} className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 space-y-6">
+              <h3 className="text-sm font-black uppercase text-gray-400 border-b pb-2">Добавить новость</h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Заголовок</label>
-                    <input 
-                      required
-                      type="text" 
-                      value={newNewsItem.title}
-                      onChange={(e) => setNewNewsItem({...newNewsItem, title: e.target.value})}
-                      className="w-full p-2 border border-gray-300 rounded"
-                    />
+                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Заголовок</label>
+                    <input type="text" value={newNewsItem.title} onChange={(e) => setNewNewsItem({...newNewsItem, title: e.target.value})} className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-amber-500 font-bold" required />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Дата</label>
-                    <input 
-                      required
-                      type="text" 
-                      placeholder="e.g. 15 декабря 2025"
-                      value={newNewsItem.date}
-                      onChange={(e) => setNewNewsItem({...newNewsItem, date: e.target.value})}
-                      className="w-full p-2 border border-gray-300 rounded"
-                    />
+                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Дата</label>
+                    <input type="text" value={newNewsItem.date} onChange={(e) => setNewNewsItem({...newNewsItem, date: e.target.value})} className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-amber-500" placeholder="15 Декабря 2025" required />
                   </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Текст превью</label>
-                    <textarea 
-                      required
-                      value={newNewsItem.preview}
-                      onChange={(e) => setNewNewsItem({...newNewsItem, preview: e.target.value})}
-                      className="w-full p-2 border border-gray-300 rounded h-24"
-                    />
-                  </div>
-                  <button type="submit" className="w-full bg-amber-600 text-white py-2 rounded font-bold hover:bg-amber-700 flex items-center justify-center">
-                    <Plus size={18} className="mr-2" /> Добавить
-                  </button>
-                </form>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Текст превью</label>
+                  <textarea value={newNewsItem.preview} onChange={(e) => setNewNewsItem({...newNewsItem, preview: e.target.value})} className="w-full p-3 border border-gray-200 rounded-lg h-[108px] outline-none focus:border-amber-500 text-sm" required />
+                </div>
               </div>
-
-              {/* List */}
-              <div className="lg:col-span-2 space-y-4">
-                {news.map(item => (
-                  <div key={item.id} className="bg-white p-4 rounded-lg shadow border border-gray-200 flex gap-4">
-                    <div className="w-32 h-24 flex-shrink-0 bg-gray-200 rounded overflow-hidden">
-                      <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <span className="text-xs font-bold text-amber-600 uppercase">{item.date}</span>
-                        <button 
-                          onClick={() => handleDeleteNews(item.id)}
-                          className="text-red-400 hover:text-red-600 p-1"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                      <h3 className="font-bold text-lg text-gray-800 leading-tight mb-1">{item.title}</h3>
-                      <p className="text-gray-600 text-sm">{item.preview}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center space-x-4 pt-4 border-t">
+                <label className="flex-1 cursor-pointer bg-gray-50 border-2 border-dashed border-gray-200 p-3 rounded-lg text-center hover:bg-gray-100 transition group relative overflow-hidden">
+                  <span className="text-xs text-gray-500 font-bold uppercase">{newNewsItem.image ? 'Изображение загружено' : 'Загрузить обложку (600x400)'}</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, (b64) => setNewNewsItem({...newNewsItem, image: b64}))} />
+                  {newNewsItem.image && <img src={newNewsItem.image} className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none" />}
+                </label>
+                <button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white px-10 py-3 rounded font-black uppercase tracking-widest transition shadow-lg active:scale-95">Опубликовать</button>
               </div>
-            </div>
-          </div>
-        )}
+            </form>
 
-        {/* USERS TAB */}
-        {activeTab === 'users' && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Список пользователей</h2>
-            <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+            {/* List */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
               <table className="w-full text-left">
-                <thead className="bg-gray-50">
-                  <tr className="border-b border-gray-200 text-xs text-gray-500 uppercase">
-                    <th className="px-6 py-4">#</th>
-                    <th className="px-6 py-4">Никнейм</th>
-                    <th className="px-6 py-4">Email</th>
-                    <th className="px-6 py-4">Роль</th>
-                    <th className="px-6 py-4">Персонажи</th>
-                    <th className="px-6 py-4">Дата регистрации</th>
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="p-4 text-[10px] font-black uppercase text-gray-400">Фото</th>
+                    <th className="p-4 text-[10px] font-black uppercase text-gray-400">Информация</th>
+                    <th className="p-4 text-[10px] font-black uppercase text-gray-400 text-right">Действия</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {users.map((u, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-gray-400 text-sm">{i + 1}</td>
-                      <td className="px-6 py-4 font-bold text-gray-800">{u.nickname}</td>
-                      <td className="px-6 py-4 text-gray-600">{u.email}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${u.role === 'admin' ? 'bg-purple-100 text-purple-600' : 'bg-green-100 text-green-600'}`}>
-                          {u.role}
-                        </span>
+                <tbody className="divide-y divide-gray-50">
+                  {news.map(item => (
+                    <tr key={item.id} className="hover:bg-gray-50 transition">
+                      <td className="p-4 w-24">
+                        <img src={item.image} className="w-20 h-12 object-cover rounded shadow-sm" />
                       </td>
-                      <td className="px-6 py-4 text-gray-800 text-sm font-semibold">
-                         {u.characters?.length || 0}
+                      <td className="p-4">
+                        <div className="font-bold text-gray-800 leading-tight">{item.title}</div>
+                        <div className="text-[10px] text-gray-400 font-bold uppercase mt-1">{item.date}</div>
                       </td>
-                      <td className="px-6 py-4 text-gray-500 text-sm">
-                        {new Date(u.registeredAt).toLocaleString()}
+                      <td className="p-4 text-right">
+                        <button onClick={() => handleDeleteNews(item.id)} className="text-red-400 hover:text-red-600 transition p-2">
+                          <Trash2 size={18} />
+                        </button>
                       </td>
                     </tr>
                   ))}
-                  {users.length === 0 && (
+                  {news.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                        Пользователей пока нет.
-                      </td>
+                      <td colSpan={3} className="p-12 text-center text-gray-400 font-bold italic">Новостей пока нет</td>
                     </tr>
                   )}
                 </tbody>
@@ -515,34 +324,56 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* SETTINGS TAB */}
+        {/* Users Tab */}
+        {activeTab === 'users' && (
+          <div className="space-y-8 max-w-5xl">
+            <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Пользователи</h2>
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="p-4 text-[10px] font-black uppercase text-gray-400">Игрок</th>
+                    <th className="p-4 text-[10px] font-black uppercase text-gray-400">Email</th>
+                    <th className="p-4 text-[10px] font-black uppercase text-gray-400">Роль</th>
+                    <th className="p-4 text-[10px] font-black uppercase text-gray-400">Регистрация</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {users.map((u, i) => (
+                    <tr key={i} className="hover:bg-gray-50 transition">
+                      <td className="p-4 font-bold text-gray-800">{u.nickname}</td>
+                      <td className="p-4 text-sm text-gray-500 font-medium">{u.email}</td>
+                      <td className="p-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${u.role === 'admin' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'}`}>{u.role}</span>
+                      </td>
+                      <td className="p-4 text-[10px] text-gray-400 font-bold uppercase">{new Date(u.registeredAt).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                  {users.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="p-12 text-center text-gray-400 font-bold italic">В базе данных нет пользователей</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Settings Tab */}
         {activeTab === 'settings' && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Настройки системы</h2>
-            
-            <div className="bg-white p-8 rounded-lg shadow border border-gray-200 max-w-2xl">
-              <div className="flex items-start space-x-4 mb-6">
-                 <div className="p-3 bg-red-100 rounded-full">
-                   <AlertTriangle className="text-red-600" size={32} />
-                 </div>
-                 <div>
-                   <h3 className="text-xl font-bold text-gray-800">Сброс данных (Wipe)</h3>
-                   <p className="text-gray-600 mt-1">
-                     Используйте эту функцию, чтобы сбросить все изменения в новостях и контенте до начальных настроек.
-                     Полезно, если вы хотите "очистить" сайт перед демонстрацией инвесторам.
-                   </p>
-                 </div>
+          <div className="max-w-xl space-y-8">
+            <h2 className="text-2xl font-black text-gray-800 uppercase tracking-tight">Система</h2>
+            <div className="bg-white p-8 rounded-xl shadow-sm border-2 border-red-50">
+              <div className="flex items-center space-x-3 text-red-600 mb-6">
+                <AlertTriangle size={32} />
+                <h3 className="text-xl font-black uppercase">Опасная зона</h3>
               </div>
-              
-              <div className="border-t border-gray-200 pt-6">
-                <button 
-                  onClick={handleResetDatabase}
-                  className="w-full py-4 border-2 border-red-500 text-red-600 hover:bg-red-50 font-bold uppercase tracking-wider rounded flex items-center justify-center space-x-2 transition"
-                >
-                  <RefreshCw size={20} />
-                  <span>Выполнить полный сброс</span>
-                </button>
-              </div>
+              <p className="text-gray-500 mb-8 font-bold text-sm leading-relaxed">Полный сброс базы данных сайта. Все изменения фракций, загруженные фото и новости будут удалены безвозвратно.</p>
+              <button onClick={handleResetDatabase} className="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-widest transition flex items-center justify-center space-x-3 shadow-lg active:scale-[0.98]">
+                <RefreshCw size={20} />
+                <span>Сбросить данные к заводским</span>
+              </button>
             </div>
           </div>
         )}
