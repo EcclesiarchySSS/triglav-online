@@ -5,6 +5,19 @@ export interface FeatureItem {
   image: string;
 }
 
+export interface Faction {
+  id: string;
+  name: string;
+  subtitle: string;
+  description: string;
+  color: string; // Tailwind class: from-X to-Y
+  borderColor: string;
+  textColor: string;
+  bgColor: string;
+  image: string;
+  iconName: 'Leaf' | 'Cpu' | 'Skull';
+}
+
 export interface GameData {
   name: string;
   slogan: string;
@@ -12,6 +25,7 @@ export interface GameData {
   description: string;
   fullDescription: string;
   features: FeatureItem[];
+  factions: Faction[];
   screenshots: string[];
   serverStatus: 'online' | 'offline' | 'maintenance';
 }
@@ -41,7 +55,7 @@ export interface User {
   characters: Character[];
 }
 
-// Данные по умолчанию (если база пустая)
+// Данные по умолчанию
 const DEFAULT_GAME_DATA: GameData = {
   name: "TRIGLAV ONLINE",
   slogan: "Командуй. Сражайся. Побеждай.",
@@ -65,11 +79,49 @@ const DEFAULT_GAME_DATA: GameData = {
       image: "https://placehold.co/600x400/1a1a1a/amber?text=Territory"
     }
   ],
+  factions: [
+    {
+      id: 'arkon',
+      name: "Империя Аркон",
+      subtitle: "Природная",
+      iconName: 'Leaf',
+      description: "Эльфы, северные люди и оборотни живут в гармонии с природой, развивая свои духовные силы. Они защищают свой цветущий мир от тех, кто угрожает его существованию.",
+      color: "from-emerald-600 to-emerald-800",
+      borderColor: "border-emerald-600",
+      textColor: "text-emerald-400",
+      bgColor: "bg-emerald-950/30",
+      image: "https://placehold.co/600x400/10b981/1a1a1a?text=Empire+Arkon"
+    },
+    {
+      id: 'ssr',
+      name: "Союз Свободных Республик",
+      subtitle: "Технократическая",
+      iconName: 'Cpu',
+      description: "Мастера технологий, сращивающие плоть и механизмы. Искренне верят в свой путь развития и готовы 'просветить' другие расы. Устойчивы к ядам благодаря имплантам.",
+      color: "from-amber-700 to-amber-900",
+      borderColor: "border-amber-700",
+      textColor: "text-amber-400",
+      bgColor: "bg-amber-950/30",
+      image: "https://placehold.co/600x400/92400e/1a1a1a?text=SSR"
+    },
+    {
+      id: 'mgla',
+      name: "Мгла",
+      subtitle: "Демоническая",
+      iconName: 'Skull',
+      description: "Служители тёмных сил, черпающие мощь из демонических недр. Поклоняются золоту и власти, мастерски порабощают разум врагов и накладывают смертельные проклятия.",
+      color: "from-purple-600 to-purple-800",
+      borderColor: "border-purple-600",
+      textColor: "text-purple-400",
+      bgColor: "bg-purple-950/30",
+      image: "https://placehold.co/600x400/7c3aed/1a1a1a?text=Mgla"
+    }
+  ],
   screenshots: [
-    "https://placehold.co/1200x700/1a1a1a/amber?text=TRIGLAV+ONLINE+-+Screenshot+1",
-    "https://placehold.co/1200x700/1a1a1a/amber?text=TRIGLAV+ONLINE+-+Screenshot+2",
-    "https://placehold.co/1200x700/1a1a1a/amber?text=TRIGLAV+ONLINE+-+Screenshot+3",
-    "https://placehold.co/1200x700/1a1a1a/amber?text=TRIGLAV+ONLINE+-+Screenshot+4"
+    "https://placehold.co/1200x700/1a1a1a/amber?text=Screenshot+1",
+    "https://placehold.co/1200x700/1a1a1a/amber?text=Screenshot+2",
+    "https://placehold.co/1200x700/1a1a1a/amber?text=Screenshot+3",
+    "https://placehold.co/1200x700/1a1a1a/amber?text=Screenshot+4"
   ],
   serverStatus: 'maintenance'
 };
@@ -81,33 +133,16 @@ const DEFAULT_NEWS: NewsItem[] = [
     date: "15 декабря 2025",
     preview: "Регистрация на закрытое альфа-тестирование открыта! Станьте первым, кто испытает TRIGLAV ONLINE.",
     image: "https://placehold.co/600x400/1a1a1a/amber?text=Alpha+Test"
-  },
-  {
-    id: 2,
-    title: "Три великие фракции",
-    date: "10 декабря 2025",
-    preview: "Познакомьтесь с тремя великими фракциями мира TRIGLAV и выберите свою сторону в вечном противостоянии.",
-    image: "https://placehold.co/600x400/1a1a1a/amber?text=Factions"
-  },
-  {
-    id: 3,
-    title: "Миры славянской мифологии",
-    date: "5 декабря 2025",
-    preview: "Явь, Правь и Навь - три мира ждут отважных героев. Исследуйте тайны древних земель.",
-    image: "https://placehold.co/600x400/1a1a1a/amber?text=Worlds"
   }
 ];
 
-// Ключи localStorage
 const KEYS = {
   GAME_DATA: 'triglav_content_data',
   NEWS: 'triglav_content_news',
   USERS: 'triglav_users_db'
 };
 
-// Сервис базы данных
 export const db = {
-  // Инициализация
   init: () => {
     if (!localStorage.getItem(KEYS.GAME_DATA)) {
       localStorage.setItem(KEYS.GAME_DATA, JSON.stringify(DEFAULT_GAME_DATA));
@@ -120,28 +155,21 @@ export const db = {
     }
   },
 
-  // Полный сброс базы данных (Wipe)
   resetToDefaults: () => {
     localStorage.setItem(KEYS.GAME_DATA, JSON.stringify(DEFAULT_GAME_DATA));
     localStorage.setItem(KEYS.NEWS, JSON.stringify(DEFAULT_NEWS));
-    // Пользователей можно оставить или удалить, по желанию.
-    // Обычно при вайпе удаляют всех кроме админов, но тут просто сбросим контент.
     return true;
   },
 
-  // Работа с контентом игры
   getGameData: (): GameData => {
     const data = localStorage.getItem(KEYS.GAME_DATA);
-    if (!data) return DEFAULT_GAME_DATA;
-    const parsed = JSON.parse(data);
-    return { ...DEFAULT_GAME_DATA, ...parsed };
+    return data ? JSON.parse(data) : DEFAULT_GAME_DATA;
   },
 
   updateGameData: (newData: GameData) => {
     localStorage.setItem(KEYS.GAME_DATA, JSON.stringify(newData));
   },
 
-  // Работа с новостями
   getNews: (): NewsItem[] => {
     const data = localStorage.getItem(KEYS.NEWS);
     return data ? JSON.parse(data) : DEFAULT_NEWS;
@@ -149,7 +177,7 @@ export const db = {
 
   addNews: (newsItem: Omit<NewsItem, 'id'>) => {
     const news = db.getNews();
-    const newId = Math.max(0, ...news.map(n => n.id)) + 1;
+    const newId = news.length > 0 ? Math.max(...news.map(n => n.id)) + 1 : 1;
     const newNews = [{ ...newsItem, id: newId }, ...news];
     localStorage.setItem(KEYS.NEWS, JSON.stringify(newNews));
   },
@@ -159,7 +187,6 @@ export const db = {
     localStorage.setItem(KEYS.NEWS, JSON.stringify(news));
   },
 
-  // Работа с пользователями
   getUsers: (): User[] => {
     const data = localStorage.getItem(KEYS.USERS);
     return data ? JSON.parse(data) : [];
@@ -168,27 +195,18 @@ export const db = {
   addUser: (user: User) => {
     const users = db.getUsers();
     if (users.some(u => u.email === user.email || u.nickname === user.nickname)) {
-      throw new Error('Пользователь с таким email или никнеймом уже существует');
+      throw new Error('Пользователь уже существует');
     }
-    const newUser = { ...user, characters: [] };
-    users.push(newUser);
+    users.push({ ...user, characters: [] });
     localStorage.setItem(KEYS.USERS, JSON.stringify(users));
   },
 
   updateUser: (email: string, updates: Partial<User>) => {
     const users = db.getUsers();
-    const index = users.findIndex(u => u.email === email);
-    if (index !== -1) {
-      users[index] = { ...users[index], ...updates };
+    const idx = users.findIndex(u => u.email === email);
+    if (idx !== -1) {
+      users[idx] = { ...users[idx], ...updates };
       localStorage.setItem(KEYS.USERS, JSON.stringify(users));
-      
-      const sessionUser = localStorage.getItem('triglav_user');
-      if (sessionUser) {
-        const parsed = JSON.parse(sessionUser);
-        if (parsed.email === email) {
-          localStorage.setItem('triglav_user', JSON.stringify(users[index]));
-        }
-      }
     }
   }
 };
