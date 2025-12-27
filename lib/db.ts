@@ -158,6 +158,7 @@ export const db = {
   resetToDefaults: () => {
     localStorage.removeItem(KEYS.GAME_DATA);
     localStorage.removeItem(KEYS.NEWS);
+    // Мы не удаляем пользователей (USERS), чтобы не разлогинивать админа
     db.init();
     return true;
   },
