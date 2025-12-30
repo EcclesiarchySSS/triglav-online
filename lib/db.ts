@@ -55,27 +55,27 @@ export interface User {
   characters: Character[];
 }
 
-// Константы данных (используем качественные фотостоки для презентации)
+// Константы данных (используем нейтральные фото-заглушки)
 const DEFAULT_GAME_DATA: GameData = {
   name: "TRIGLAV ONLINE",
   slogan: "Командуй. Сражайся. Побеждай.",
   tagline: "Стратегическая MMORPG в сеттинге славянского фэнтези",
-  description: "Управляйте героем, ведущим за собой отряд воинов. Исследуйте три мира славянской мифологии: Явь, Правь и Навь. Выберите одну из трёх великих фракций и участвуйте в эпическом противостоянии.",
-  fullDescription: "Станьте воином, ремесленником, строителем или собирателем. Вся экономика создаётся игроками — от простого меча до легендарных артефактов.",
+  description: "Управляйте героем, ведущим за собой отряд воинов. Исследуйте три мира славянской мифологии. Выберите свою фракцию и участвуйте в глобальном противостоянии.",
+  fullDescription: "Станьте воином, ремесленником или торговцем. Вся экономика создаётся игроками.",
   features: [
     {
       title: "Экономика игроков",
-      description: "Создавайте ресурсы и торгуйте на глобальном рынке. Каждый предмет в игре сделан кем-то из игроков.",
+      description: "Создавайте ресурсы и торгуйте на глобальном рынке.",
       image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc51?auto=format&fit=crop&q=80&w=800"
     },
     {
       title: "Чёрные зоны",
-      description: "Опасные территории с механикой Full Loot. Рискните всем ради великой награды.",
+      description: "Опасные территории с механикой полного выпадения вещей.",
       image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800"
     },
     {
       title: "Осады замков",
-      description: "Масштабные сражения за контроль территорий и налоговые отчисления с городов.",
+      description: "Масштабные сражения за контроль территорий.",
       image: "https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?auto=format&fit=crop&q=80&w=800"
     }
   ],
@@ -85,7 +85,7 @@ const DEFAULT_GAME_DATA: GameData = {
       name: "Империя Аркон",
       subtitle: "Природная гармония",
       iconName: 'Leaf',
-      description: "Защитники лесов и древних традиций. Сильны в магии природы и партизанской войне.",
+      description: "Защитники лесов и древних традиций.",
       color: "from-emerald-600 to-emerald-800",
       borderColor: "border-emerald-600",
       textColor: "text-emerald-400",
@@ -97,7 +97,7 @@ const DEFAULT_GAME_DATA: GameData = {
       name: "Союз Республик",
       subtitle: "Технократия",
       iconName: 'Cpu',
-      description: "Инженеры и изобретатели, полагающиеся на механизмы и дисциплину регулярной армии.",
+      description: "Инженеры и изобретатели, полагающиеся на дисциплину.",
       color: "from-amber-700 to-amber-900",
       borderColor: "border-amber-700",
       textColor: "text-amber-400",
@@ -109,7 +109,7 @@ const DEFAULT_GAME_DATA: GameData = {
       name: "Мгла",
       subtitle: "Демоническая мощь",
       iconName: 'Skull',
-      description: "Последователи тёмных культов, использующие силу хаоса для сокрушения врагов.",
+      description: "Последователи тёмных сил, использующие мощь хаоса.",
       color: "from-purple-600 to-purple-800",
       borderColor: "border-purple-600",
       textColor: "text-purple-400",
@@ -119,8 +119,7 @@ const DEFAULT_GAME_DATA: GameData = {
   ],
   screenshots: [
     "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1200",
-    "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=1200",
-    "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=80&w=1200"
+    "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=1200"
   ],
   serverStatus: 'maintenance'
 };
@@ -137,14 +136,8 @@ export const db = {
       if (!localStorage.getItem(KEYS.GAME_DATA)) {
         localStorage.setItem(KEYS.GAME_DATA, JSON.stringify(DEFAULT_GAME_DATA));
       }
-      if (!localStorage.getItem(KEYS.NEWS)) {
-        localStorage.setItem(KEYS.NEWS, JSON.stringify([]));
-      }
-      if (!localStorage.getItem(KEYS.USERS)) {
-        localStorage.setItem(KEYS.USERS, JSON.stringify([]));
-      }
     } catch (e) {
-      console.error("LocalStorage initialization failed", e);
+      console.error("DB Init failed", e);
     }
   },
 
@@ -201,5 +194,4 @@ export const db = {
   }
 };
 
-// Выполняем инициализацию сразу при загрузке модуля
 db.init();
