@@ -1,4 +1,4 @@
-// Типы данных
+// Типы данных приложения
 export interface FeatureItem {
   title: string;
   description: string;
@@ -10,7 +10,7 @@ export interface Faction {
   name: string;
   subtitle: string;
   description: string;
-  color: string; // Tailwind class: from-X to-Y
+  color: string;
   borderColor: string;
   textColor: string;
   bgColor: string;
@@ -55,86 +55,75 @@ export interface User {
   characters: Character[];
 }
 
-// Данные по умолчанию
+// Константы данных (используем качественные фотостоки для презентации)
 const DEFAULT_GAME_DATA: GameData = {
   name: "TRIGLAV ONLINE",
   slogan: "Командуй. Сражайся. Побеждай.",
-  tagline: "Стратегическая MMORPG",
-  description: "Управляйте героем, ведущим за собой отряд воинов. Исследуйте три мира славянской мифологии: Явь, Правь и Навь. Выберите одну из трёх великих фракций и участвуйте в эпическом противостоянии за господство на континенте Средиземье.",
-  fullDescription: "Станьте воином, ремесленником, строителем или собирателем. Вся экономика создаётся игроками - от простого меча до легендарных артефактов. В опасных чёрных зонах победитель забирает всё снаряжение поверженных врагов, создавая уникальную экономику без инфляции.",
+  tagline: "Стратегическая MMORPG в сеттинге славянского фэнтези",
+  description: "Управляйте героем, ведущим за собой отряд воинов. Исследуйте три мира славянской мифологии: Явь, Правь и Навь. Выберите одну из трёх великих фракций и участвуйте в эпическом противостоянии.",
+  fullDescription: "Станьте воином, ремесленником, строителем или собирателем. Вся экономика создаётся игроками — от простого меча до легендарных артефактов.",
   features: [
     {
       title: "Экономика игроков",
-      description: "Вся экономика управляется игроками. Создавайте оружие, броню, зелья и торгуйте на рынке.",
-      image: "https://placehold.co/600x400/1a1a1a/amber?text=Economy"
+      description: "Создавайте ресурсы и торгуйте на глобальном рынке. Каждый предмет в игре сделан кем-то из игроков.",
+      image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc51?auto=format&fit=crop&q=80&w=800"
     },
     {
       title: "Чёрные зоны",
-      description: "Опасные территории полного лута. Победитель забирает всё снаряжение поверженных врагов.",
-      image: "https://placehold.co/600x400/1a1a1a/red?text=Black+Zones"
+      description: "Опасные территории с механикой Full Loot. Рискните всем ради великой награды.",
+      image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800"
     },
     {
-      title: "Контроль территорий",
-      description: "Захватывайте земли, стройте укрепления и сражайтесь за господство на континенте.",
-      image: "https://placehold.co/600x400/1a1a1a/amber?text=Territory"
+      title: "Осады замков",
+      description: "Масштабные сражения за контроль территорий и налоговые отчисления с городов.",
+      image: "https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?auto=format&fit=crop&q=80&w=800"
     }
   ],
   factions: [
     {
       id: 'arkon',
       name: "Империя Аркон",
-      subtitle: "Природная",
+      subtitle: "Природная гармония",
       iconName: 'Leaf',
-      description: "Эльфы, северные люди и оборотни живут в гармонии с природой, развивая свои духовные силы. Они защищают свой цветущий мир от тех, кто угрожает его существованию.",
+      description: "Защитники лесов и древних традиций. Сильны в магии природы и партизанской войне.",
       color: "from-emerald-600 to-emerald-800",
       borderColor: "border-emerald-600",
       textColor: "text-emerald-400",
       bgColor: "bg-emerald-950/30",
-      image: "https://placehold.co/600x400/10b981/1a1a1a?text=Empire+Arkon"
+      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=800"
     },
     {
       id: 'ssr',
-      name: "Союз Свободных Республик",
-      subtitle: "Технократическая",
+      name: "Союз Республик",
+      subtitle: "Технократия",
       iconName: 'Cpu',
-      description: "Мастера технологий, сращивающие плоть и механизмы. Искренне верят в свой путь развития и готовы 'просветить' другие расы. Устойчивы к ядам благодаря имплантам.",
+      description: "Инженеры и изобретатели, полагающиеся на механизмы и дисциплину регулярной армии.",
       color: "from-amber-700 to-amber-900",
       borderColor: "border-amber-700",
       textColor: "text-amber-400",
       bgColor: "bg-amber-950/30",
-      image: "https://placehold.co/600x400/92400e/1a1a1a?text=SSR"
+      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800"
     },
     {
       id: 'mgla',
       name: "Мгла",
-      subtitle: "Демоническая",
+      subtitle: "Демоническая мощь",
       iconName: 'Skull',
-      description: "Служители тёмных сил, черпающие мощь из демонических недр. Поклоняются золоту и власти, мастерски порабощают разум врагов и накладывают смертельные проклятия.",
+      description: "Последователи тёмных культов, использующие силу хаоса для сокрушения врагов.",
       color: "from-purple-600 to-purple-800",
       borderColor: "border-purple-600",
       textColor: "text-purple-400",
       bgColor: "bg-purple-950/30",
-      image: "https://placehold.co/600x400/7c3aed/1a1a1a?text=Mgla"
+      image: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&q=80&w=800"
     }
   ],
   screenshots: [
-    "https://placehold.co/1200x700/1a1a1a/amber?text=Screenshot+1",
-    "https://placehold.co/1200x700/1a1a1a/amber?text=Screenshot+2",
-    "https://placehold.co/1200x700/1a1a1a/amber?text=Screenshot+3",
-    "https://placehold.co/1200x700/1a1a1a/amber?text=Screenshot+4"
+    "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1200",
+    "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=1200",
+    "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=80&w=1200"
   ],
   serverStatus: 'maintenance'
 };
-
-const DEFAULT_NEWS: NewsItem[] = [
-  {
-    id: 1,
-    title: "Анонс альфа-тестирования",
-    date: "15 декабря 2025",
-    preview: "Регистрация на закрытое альфа-тестирование открыта! Станьте первым, кто испытает TRIGLAV ONLINE.",
-    image: "https://placehold.co/600x400/1a1a1a/amber?text=Alpha+Test"
-  }
-];
 
 const KEYS = {
   GAME_DATA: 'triglav_content_data',
@@ -144,22 +133,25 @@ const KEYS = {
 
 export const db = {
   init: () => {
-    if (!localStorage.getItem(KEYS.GAME_DATA)) {
-      localStorage.setItem(KEYS.GAME_DATA, JSON.stringify(DEFAULT_GAME_DATA));
-    }
-    if (!localStorage.getItem(KEYS.NEWS)) {
-      localStorage.setItem(KEYS.NEWS, JSON.stringify(DEFAULT_NEWS));
-    }
-    if (!localStorage.getItem(KEYS.USERS)) {
-      localStorage.setItem(KEYS.USERS, JSON.stringify([]));
+    try {
+      if (!localStorage.getItem(KEYS.GAME_DATA)) {
+        localStorage.setItem(KEYS.GAME_DATA, JSON.stringify(DEFAULT_GAME_DATA));
+      }
+      if (!localStorage.getItem(KEYS.NEWS)) {
+        localStorage.setItem(KEYS.NEWS, JSON.stringify([]));
+      }
+      if (!localStorage.getItem(KEYS.USERS)) {
+        localStorage.setItem(KEYS.USERS, JSON.stringify([]));
+      }
+    } catch (e) {
+      console.error("LocalStorage initialization failed", e);
     }
   },
 
   resetToDefaults: () => {
     localStorage.removeItem(KEYS.GAME_DATA);
     localStorage.removeItem(KEYS.NEWS);
-    // Мы не удаляем пользователей (USERS), чтобы не разлогинивать админа
-    db.init();
+    window.location.reload();
     return true;
   },
 
@@ -174,14 +166,13 @@ export const db = {
 
   getNews: (): NewsItem[] => {
     const data = localStorage.getItem(KEYS.NEWS);
-    return data ? JSON.parse(data) : DEFAULT_NEWS;
+    return data ? JSON.parse(data) : [];
   },
 
   addNews: (newsItem: Omit<NewsItem, 'id'>) => {
     const news = db.getNews();
     const newId = news.length > 0 ? Math.max(...news.map(n => n.id)) + 1 : 1;
-    const newNews = [{ ...newsItem, id: newId }, ...news];
-    localStorage.setItem(KEYS.NEWS, JSON.stringify(newNews));
+    localStorage.setItem(KEYS.NEWS, JSON.stringify([{ ...newsItem, id: newId }, ...news]));
   },
 
   deleteNews: (id: number) => {
@@ -196,10 +187,7 @@ export const db = {
 
   addUser: (user: User) => {
     const users = db.getUsers();
-    if (users.some(u => u.email === user.email || u.nickname === user.nickname)) {
-      throw new Error('Пользователь уже существует');
-    }
-    users.push({ ...user, characters: [] });
+    users.push(user);
     localStorage.setItem(KEYS.USERS, JSON.stringify(users));
   },
 
@@ -213,4 +201,5 @@ export const db = {
   }
 };
 
+// Выполняем инициализацию сразу при загрузке модуля
 db.init();
